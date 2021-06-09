@@ -1,0 +1,140 @@
+---
+title: "upsa - Uncertainty Propagation & Sensitivity Analysis"
+author: "Pascal PERNOT / CNRS"
+output:
+  html_document:
+    fig_height: 5
+    fig_width: 5
+    number_sections: yes
+    theme: cerulean
+  pdf_document:
+    fig_height: 5
+    fig_width: 5
+    number_sections: yes
+  word_document:
+    fig_height: 5
+    fig_width: 5
+fontsize: 12pt
+---
+
+```{r, echo=FALSE}
+fExpr = Inputs$fExpr
+x.mu  = sapply(Inputs$x.mu , string2Num)
+x.u   = sapply(Inputs$x.u  , string2Num)
+x.df  = sapply(Inputs$x.df  , string2Num)
+x.pdf= sapply(Inputs$x.pdf, function(x) x)  
+names(x.mu)=names(x.u)=names(x.df)=names(x.pdf)=Inputs$names
+```
+
+# Model function
+
+```{r echo=FALSE}
+fExpr
+```
+
+# Input variables 
+
+```{r echo =FALSE}
+knitr::kable(
+  data.frame(
+    Mean = sprintf("%.3e",x.mu),
+    SD   = sprintf("%.3e",x.u),
+    DF   = x.df,
+    PDF=x.pdf
+    ), 
+  format='markdown', 
+  padding=1,
+  align=c('r','r','r','r'))
+```
+
+# Results
+
+```{r results='asis', echo=FALSE}
+if('GUM' %in% input$inReport)
+cat ('## GUM: Combinaison des variances')
+```
+
+```{r echo=FALSE}
+if('GUM' %in% input$inReport) {
+G=gumCV(fExpr=fExpr,x.mu=x.mu,x.u=x.u,silent=TRUE)
+knitr::kable(
+  G$budget, 
+  format='markdown', 
+  padding=1,
+  align=c('r','r','r','r','r'))
+
+uncPrint(y=G$y.mu,uy=G$y.u)
+
+# Incertitude élargie
+p=0.95
+fac=1.96
+cat('\n\n','Incertitide élargie ( k=',fac,')')
+uncPrint(y=G$y.mu,uy=G$y.u*fac)
+CIPrint(y=G$y.mu,uy=G$y.u,fac=fac,p=p)  
+}
+```
+
+```{r results='asis', echo=FALSE}
+if('MC' %in% input$inReport)
+  cat ('## GUM-Supp1: Monte Carlo')
+```
+
+
+```{r echo=FALSE}
+if('MC' %in% input$inReport)
+  S=gumS2(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.pdf=x.pdf,x.df=x.df)
+```
+
+```{r echo=FALSE}
+if('CV' %in% input$inReport) cumPlot(S$Y)
+```
+
+```{r echo=FALSE}
+if('ECDF' %in% input$inReport) ECIPlot(S$Y)
+```
+
+
+```{r results='asis', echo=FALSE}
+if('COR' %in% input$inReport || 'VG' %in% input$inReport)
+  cat ('## Analyse globale de sensibilité')
+```
+
+```{r results='asis', echo=FALSE}
+if('COR' %in% input$inReport) {
+  cat ('### Corrélations entrées/sorties')
+}
+```
+
+```{r echo=FALSE}
+if('COR' %in% input$inReport) {
+  SAPlot(cbind(S$X,S$Y))
+}
+```
+
+```{r results='asis', echo=FALSE}
+if('VG' %in% input$inReport) {
+  cat ('### Gradients de la Variance')
+}
+```
+
+```{r echo=FALSE}
+if('VG' %in% input$inReport) {
+  d= vgSA(fExpr=fExpr,x.mu=x.mu, x.u=x.u, X=S$X, Y=S$Y,silent=TRUE)
+  knitr::kable(
+    d$budget,            
+    format='markdown', 
+    padding=1,
+    align=c('r','r','r'))  
+} 
+```
+
+
+******
+
+Session Info
+------------
+```{r, echo=FALSE}
+sessionInfo()
+RNGkind()
+ls()
+```
