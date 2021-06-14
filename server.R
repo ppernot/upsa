@@ -47,7 +47,7 @@ availablePdfs=c('norm','unif','triangle',
 
 picWidth = '480px'
 
-nrunMax=1e4 # Max. number of MC runs, for online service
+nrunMax = 1e4 # Max. number of MC runs, for online service
 
 
 shinyServer(function(input, output, session) {
@@ -202,7 +202,8 @@ shinyServer(function(input, output, session) {
   # Dynamic UI for variables input
   output$variables_ui = renderUI({
     if (input$updateExpr == 0 | 
-          is.null(Inputs$fExpr)  ) return(NULL)
+        is.null(Inputs$fExpr)  ) 
+      return(NULL)
     
     # Initialize values and build input fields
     isolate({
@@ -218,12 +219,12 @@ shinyServer(function(input, output, session) {
       for (var in Inputs$names) {
         tabInput=c(tabInput,list(HTML(paste0('<tr><td><b>',var,'&nbsp;</td>'))))
         for (type in c('mu','u','df','pdf')) {
-          name=paste0(var,'.',type)
-          value=eval(parse(text=paste0('x.',type,'[["',var,'"]]')))
+          name  = paste0(var,'.',type)
+          value = eval(parse(text=paste0('x.',type,'[["',var,'"]]')))
           if(type == 'pdf')
             locInput = list(HTML('<td>'),
                             selectInput(name, 
-                                        label='', 
+                                        label = '', 
                                         availablePdfs, 
                                         selected = value),
                             HTML('</td></tr>'))    
@@ -235,12 +236,12 @@ shinyServer(function(input, output, session) {
                                        style = 'width: 80px;'),
                             HTML('</td>'))    
           
-          tabInput=c(tabInput,locInput)
+          tabInput = c(tabInput,locInput)
         }
       }
-      tabInput=list(tabInput,HTML('</table>'))
+      tabInput = list(tabInput,HTML('</table>'))
       
-      matInput=list(HTML('<table cellpadding=2 border=0>'))
+      matInput = list(HTML('<table cellpadding=2 border=0>'))
       nvars = Inputs$nvars
       for (i1 in 1:nvars) {
         var1 = Inputs$names[i1]
@@ -251,20 +252,26 @@ shinyServer(function(input, output, session) {
             locInput=list(HTML('<td>&nbsp;</td>'))
             
           } else if (i2 == i1) {
-            locInput=list(HTML(paste0('<td align=center valign=middle width=50><b>',
-                                      var1,'</b></td>')))                        
+            locInput=list(
+              HTML(
+                paste0('<td align=center valign=middle width=50><b>',
+                       var1,'</b></td>')
+              )
+            )                        
             
           } else {
             name  = paste0('c_',var1,'_',var2)
             value = if(is.null(Inputs$corrMat)) 0 else Inputs$corrMat[i1,i2]
-            locInput = list(HTML('<td>'),
-                            tags$input(id = name, 
-                                       type = 'number', 
-                                       value = value, 
-                                       min=-1, max=1, 
-                                       class='shiny-bound-input',
-                                       style='width: 50px;'),
-                            HTML('</td>'))                        
+            locInput = list(
+              HTML('<td>'),
+              tags$input(id = name, 
+                         type = 'number', 
+                         value = value, 
+                         min = -1, max = 1, 
+                         class = 'shiny-bound-input',
+                         style = 'width: 50px;'),
+              HTML('</td>')
+            )                        
           }
           matInput=c(matInput,locInput)
         }
@@ -276,44 +283,50 @@ shinyServer(function(input, output, session) {
     
     verticalLayout(
       tabsetPanel(
-        tabPanel(title="Parameters",
-                 wellPanel(
-                   tabInput,
-                   br(),
-                   fixedRow(
-                     column(6,offset=1,
-                            actionButton("clearVars" ,
-                                         "Reset",
-                                         icon=icon("eraser")),
-                            actionButton("updateVars",
-                                         "OK",
-                                         icon=icon("check"))
-                     )
-                   )
-                 )
+        tabPanel(
+          title = "Parameters",
+          wellPanel(
+            tabInput,
+            br(),
+            fixedRow(
+              column(
+                6,
+                offset = 1,
+                actionButton("clearVars" ,
+                             "Reset",
+                             icon = icon("eraser")),
+                actionButton("updateVars",
+                             "OK",
+                             icon = icon("check"))
+              )
+            )
+          )
         ),
-        tabPanel(title="Correlations",
-                 wellPanel(
-                   matInput,
-                   uiOutput("matrixAlert"),
-                   br(),
-                   fixedRow(
-                     column(6,offset=1,
-                            actionButton("clearMat" ,
-                                         "Reset",
-                                         icon=icon("eraser")),
-                            actionButton("updateMat",
-                                         "OK",
-                                         icon=icon("check"))
-                     )
-                   )
-                 )
+        tabPanel(
+          title = "Correlations",
+          wellPanel(
+            matInput,
+            uiOutput("matrixAlert"),
+            br(),
+            fixedRow(
+              column(
+                6,
+                offset = 1,
+                actionButton("clearMat" ,
+                             "Reset",
+                             icon = icon("eraser")),
+                actionButton("updateMat",
+                             "OK",
+                             icon = icon("check"))
+              )
+            )
+          )
         ),
-        type='pills'
+        type = 'pills'
       ),
       actionButton("propagate",
                    "Propagate",
-                   icon=icon("gears")
+                   icon = icon("gears")
       )
     )
   })
@@ -378,8 +391,10 @@ shinyServer(function(input, output, session) {
   })
   
   output$corrMat <- renderTable({
-    if(is.null(Inputs$corrMat)) return(NULL)
-    if(sum(as.numeric(Inputs$corrMat[upper.tri(Inputs$corrMat,diag=FALSE)]))==0) return(NULL)
+    if(is.null(Inputs$corrMat)) 
+      return(NULL)
+    if(sum(as.numeric(Inputs$corrMat[upper.tri(Inputs$corrMat, diag = FALSE)]))==0)
+      return(NULL)
     matrix(as.numeric(Inputs$corrMat),nrow=Inputs$nvars)
   })
   
@@ -395,12 +410,12 @@ shinyServer(function(input, output, session) {
     
     isolate({    
       # Get variables data
-      fExpr= Inputs$fExpr
-      x.mu = sapply(Inputs$x.mu, string2Num)
-      x.u  = sapply(Inputs$x.u,  string2Num)
-      x.df = sapply(Inputs$x.df, string2Num)
-      x.pdf= Inputs$x.pdf   
-      nvars= Inputs$nvars
+      fExpr = Inputs$fExpr
+      x.mu  = sapply(Inputs$x.mu, string2Num)
+      x.u   = sapply(Inputs$x.u,  string2Num)
+      x.df  = sapply(Inputs$x.df, string2Num)
+      x.pdf = Inputs$x.pdf   
+      nvars = Inputs$nvars
       names(x.mu)=names(x.u)=names(x.df)=names(x.pdf)=Inputs$names
       
       if(is.null(Inputs$corrMat)) 
@@ -416,22 +431,58 @@ shinyServer(function(input, output, session) {
     # Propagate (reacts to "Propagation method" panel)
     method=input$method
     if( method == 'GUM') {
-      gumCV(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.cor=x.cor,silent=TRUE) 
+      gumCV(
+        fExpr = fExpr,
+        x.mu = x.mu,
+        x.u = x.u,
+        x.cor = x.cor,
+        silent = TRUE
+      ) 
       
     } else {
       ndig=as.numeric(input$ndigits)
       adapt = input$sampling == 'adapt'
       if(adapt) {
         if(input$adaptType == 's1')
-          gumS1(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.df=x.df,x.pdf=x.pdf,
-                x.cor=x.cor,ndig=ndig,adapt=adapt,silent=TRUE,nrunMax=nrunMax)  
+          gumS1(
+            fExpr = fExpr,
+            x.mu = x.mu,
+            x.u = x.u,
+            x.df = x.df,
+            x.pdf = x.pdf,
+            x.cor = x.cor,
+            ndig = ndig,
+            adapt = adapt,
+            silent = TRUE,
+            nrunMax = nrunMax
+          )
         else
-          gumS2(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.df=x.df,x.pdf=x.pdf,
-                x.cor=x.cor,ndig=ndig,silent=TRUE,nrunMax=nrunMax)            
+          gumS2(
+            fExpr = fExpr,
+            x.mu = x.mu,
+            x.u = x.u,
+            x.df = x.df,
+            x.pdf = x.pdf,
+            x.cor = x.cor,
+            ndig = ndig,
+            silent = TRUE,
+            nrunMax = nrunMax
+          )
       } else {
-        nrun=input$nMCrun
-        gumS1(fExpr=fExpr,x.mu=x.mu,x.u=x.u,x.df=x.df,x.pdf=x.pdf,
-              x.cor=x.cor,nrun=nrun,ndig=ndig,adapt=adapt,silent=TRUE,nrunMax=nrunMax)          
+        nrun = input$nMCrun
+        gumS1(
+          fExpr = fExpr,
+          x.mu = x.mu,
+          x.u = x.u,
+          x.df = x.df,
+          x.pdf = x.pdf,
+          x.cor = x.cor,
+          nrun = nrun,
+          ndig = ndig,
+          adapt = adapt,
+          silent = TRUE,
+          nrunMax = nrunMax
+        )          
       }      
     }          
     
@@ -442,80 +493,91 @@ shinyServer(function(input, output, session) {
     if (is.null(do_GUM())) return(NULL)
     
     if (input$method == 'GUM') {
-      tabPanel(title="GUM",
-               h4("Combination of Variances"),           
-               tabsetPanel(id='tabGUM',
-                           selected=input$tabGUM,
-                           tabPanel(title="Summary",
-                                    wellPanel(
-                                      h5("Combined Uncertainty"), 
-                                      textOutput("output_GUM_summary"),      
-                                      h5("Enlarged Uncertainty"), 
-                                      textOutput("output_GUM_EU"),  
-                                      h5("Coverage Interval"),    
-                                      textOutput("output_GUM_CI")
-                                    )
-                           ),
-                           tabPanel(title="Budget Table",
-                                    wellPanel(
-                                      tableOutput("output_GUM")
-                                    )
-                           ),
-                           type='pills'              
-               )
+      tabPanel(
+        title="GUM",
+        h4("Combination of Variances"),           
+        tabsetPanel(
+          id='tabGUM',
+          selected=input$tabGUM,
+          tabPanel(
+            title="Summary",
+            wellPanel(
+              h5("Combined Uncertainty"), 
+              textOutput("output_GUM_summary"),      
+              h5("Enlarged Uncertainty"), 
+              textOutput("output_GUM_EU"),  
+              h5("Coverage Interval"),    
+              textOutput("output_GUM_CI")
+            )
+          ),
+          tabPanel(
+            title="Budget Table",
+            wellPanel(
+              tableOutput("output_GUM")
+            )
+          ),
+          type='pills'              
+        )
       )
     } else {
-      tabPanel(title="GUM_Supp1",
-               h4("Combination of Distributions by Monte-Carlo"),                          
-               tabsetPanel(id='tabSup1',
-                           selected=input$tabSup1,
-                           tabPanel(title="Summary",
-                                    wellPanel(
-                                      h5("Sample size"), 
-                                      textOutput("output_GUM_size"),      
-                                      h5("Combined Uncertainty"), 
-                                      textOutput("output_GUM_summary"),      
-                                      h5("Enlarged Uncertainty"), 
-                                      textOutput("output_GUM_EU"),  
-                                      h5("Coverage Interval"),    
-                                      textOutput("output_GUM_CI")  
-                                    )
-                           ),
-                           tabPanel(title="Convergence",
-                                    wellPanel(
-                                      h5("Cumulated Statistics"),
-                                      plotOutput("output_cumPlot",
-                                                 width=picWidth, 
-                                                 height=picWidth)
-                                    )
-                           ),
-                           tabPanel(title="Empirical CDF",
-                                    wellPanel(
-                                      h5("Empirical Cumulated Distribution"),
-                                      plotOutput("output_ECIPlot",
-                                                 width=picWidth, 
-                                                 height=picWidth)
-                                    )
-                           ),
-                           tabPanel(title="I/O Correlations",
-                                    wellPanel(
-                                      h5("Inputs/Ouput(s) Scatterplots and Rank 
+      tabPanel(
+        title="GUM_Supp1",
+        h4("Combination of Distributions by Monte-Carlo"),                          
+        tabsetPanel(
+          id='tabSup1',
+          selected=input$tabSup1,
+          tabPanel(
+            title="Summary",
+            wellPanel(
+              h5("Sample size"), 
+              textOutput("output_GUM_size"),      
+              h5("Combined Uncertainty"), 
+              textOutput("output_GUM_summary"),      
+              h5("Enlarged Uncertainty"), 
+              textOutput("output_GUM_EU"),  
+              h5("Coverage Interval"),    
+              textOutput("output_GUM_CI")  
+            )
+          ),
+          tabPanel(
+            title="Convergence",
+            wellPanel(
+              h5("Cumulated Statistics"),
+              plotOutput("output_cumPlot",
+                         width=picWidth, 
+                         height=picWidth)
+            )
+          ),
+          tabPanel(
+            title="Empirical CDF",
+            wellPanel(
+              h5("Empirical Cumulated Distribution"),
+              plotOutput("output_ECIPlot",
+                         width=picWidth, 
+                         height=picWidth)
+            )
+          ),
+          tabPanel(
+            title="I/O Correlations",
+            wellPanel(
+              h5("Inputs/Ouput(s) Scatterplots and Rank 
                              Correlation Coefficients."),
-                                      plotOutput("output_SAPlot",
-                                                 width=picWidth, 
-                                                 height=picWidth)
-                                    )
-                           ),
-                           tabPanel(title="Variance Gradients",
-                                    wellPanel(
-                                      h5("Variance Gradients Sensitivity Analysis"),
-                                      tableOutput("output_vgSA"),
-                                      em("cf."),"Campanelli ",em("et al.")," (2013)",
-                                      em("Meas. Sci. Tech. "),strong("24"),":025002"
-                                    )
-                           ),
-                           type='pills'
-               )
+              plotOutput("output_SAPlot",
+                         width=picWidth, 
+                         height=picWidth)
+            )
+          ),
+          tabPanel(
+            title="Variance Gradients",
+            wellPanel(
+              h5("Variance Gradients Sensitivity Analysis"),
+              tableOutput("output_vgSA"),
+              em("cf."),"Campanelli ",em("et al.")," (2013)",
+              em("Meas. Sci. Tech. "),strong("24"),":025002"
+            )
+          ),
+          type='pills'
+        )
       )
     }  
   })
@@ -554,7 +616,7 @@ shinyServer(function(input, output, session) {
   })
   output$output_GUM_summary <- renderPrint({
     if (is.null(do_GUM())) return(NULL)
-    G=do_GUM()
+    G = do_GUM()
     uncPrint(G$y.mu,G$y.u) 
   })
   output$output_GUM_EU <- renderPrint({
@@ -638,7 +700,9 @@ shinyServer(function(input, output, session) {
       "names(x.pdf)=c('",paste0(names,collapse="','"),"')\n")
     if(!is.null(corrMat))
       txt = paste0(txt,
-             "corrMat=matrix(c('",paste0(corrMat,collapse="','"),"'),nrow=",nvars,")\n"
+             "corrMat=matrix(c('",
+               paste0(corrMat,collapse="','"),
+             "'),nrow=",nvars,")\n"
              )
     
     return(txt)
@@ -657,12 +721,13 @@ shinyServer(function(input, output, session) {
       owd <- setwd(tempdir())
       on.exit(setwd(owd))
       file.copy(src, 'reportTemplate.Rmd')
-      out <- rmarkdown::render('reportTemplate.Rmd', 
-                               switch(input$format,
-                                      PDF = "pdf_document", 
-                                      HTML = "html_document", 
-                                      Word = "word_document")
-                               )
+      out <- rmarkdown::render(
+        'reportTemplate.Rmd', 
+        switch(input$format,
+               PDF = "pdf_document", 
+               HTML = "html_document", 
+               Word = "word_document")
+      )
       file.rename(out, file)
     }
   )

@@ -1,6 +1,10 @@
-# upsa
+[![DOI](https://zenodo.org/badge/375296949.svg)](https://zenodo.org/badge/latestdoi/375296949)
 
-Shiny interface for Uncertainty Propagation and Sensitivity Analysis
+# UPSA: Uncertainty Propagation and Sensitivity Analysis
+
+
+Shiny interface for uncertainty propagation and sensitivity analysis
+for simple models and educational purpose.
 
 ## Want to test it before installing ?
 
